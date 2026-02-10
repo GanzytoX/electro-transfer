@@ -7,6 +7,7 @@ import type {
   NotificationType,
   DatosTransferencia,
 } from "~/entities/transfer/model/types";
+import { obtenerClaveBanco } from "~/shared/lib/bancos";
 
 const { Option } = Select;
 
@@ -148,13 +149,27 @@ function ImportData({ onImportData, showNotification }: ImportDataProps) {
               row["TipoCuenta"] ||
               "40",
           );
-          datosBase.claveBanco = String(
+
+          // Lógica mejorada para detectar banco por Clave o por Nombre
+          let rawBanco = String(
             row["Clave Banco"] ||
               row["clave_banco"] ||
               row["ClaveBanco"] ||
+              row["Nombre Banco"] ||
+              row["nombre_banco"] ||
+              row["NombreBanco"] ||
               row["banco"] ||
-              "044",
-          );
+              "",
+          ).trim();
+
+          // Asegurar formato de 3 dígitos con ceros iniciales si es numérico
+          if (/^\d{1,2}$/.test(rawBanco)) {
+            rawBanco = rawBanco.padStart(3, "0");
+          }
+
+          // Intenta obtener la clave a partir del número o nombre
+          datosBase.claveBanco = obtenerClaveBanco(rawBanco) || "044";
+
           datosBase.referencia = String(
             row["Referencia"] || row["referencia"] || "0000000",
           );

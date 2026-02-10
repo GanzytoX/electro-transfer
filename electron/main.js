@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog } = require("electron");
+const { app, BrowserWindow, dialog, screen } = require("electron");
 const path = require("path");
 
 // Manejo de errores global antes de cualquier otra cosa
@@ -17,9 +17,24 @@ require("@electron/remote/main").initialize();
 let mainWindow;
 
 function createWindow() {
+  // Obtener dimensiones de la pantalla
+  const { width: screenWidth, height: screenHeight } =
+    screen.getPrimaryDisplay().workAreaSize;
+
+  // Calcular tamaño de ventana (85% de la pantalla)
+  // Con límites mínimos: 800x600 y máximos: 1200x900
+  const windowWidth = Math.min(
+    Math.max(Math.floor(screenWidth * 0.85), 800),
+    1200,
+  );
+  const windowHeight = Math.min(
+    Math.max(Math.floor(screenHeight * 0.85), 600),
+    900,
+  );
+
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 900,
+    width: windowWidth,
+    height: windowHeight,
     resizable: false,
     maximizable: false,
     frame: false, // Sin marco nativo
