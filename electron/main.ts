@@ -1,8 +1,9 @@
-const { app, BrowserWindow, dialog, screen } = require("electron");
-const path = require("path");
+import { app, BrowserWindow, dialog, screen, ipcMain } from "electron";
+import path from "path";
+import fs from "fs";
+import os from "os";
 
-// Manejo de errores global antes de cualquier otra cosa
-process.on("uncaughtException", (error) => {
+process.on("uncaughtException", (error: Error) => {
   console.error("Uncaught Exception:", error);
   dialog.showErrorBox(
     "Error inesperado",
@@ -11,18 +12,12 @@ process.on("uncaughtException", (error) => {
   app.quit();
 });
 
-// Habilitar remote para dialog
-require("@electron/remote/main").initialize();
-
-let mainWindow;
+let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
-  // Obtener dimensiones de la pantalla
   const { width: screenWidth, height: screenHeight } =
     screen.getPrimaryDisplay().workAreaSize;
 
-  // Calcular tamaño de ventana (85% de la pantalla)
-  // Con límites mínimos: 800x600 y máximos: 1200x900
   const windowWidth = Math.min(
     Math.max(Math.floor(screenWidth * 0.85), 800),
     1200,
@@ -37,8 +32,8 @@ function createWindow() {
     height: windowHeight,
     resizable: false,
     maximizable: false,
-    frame: false, // Sin marco nativo
-    titleBarStyle: "hidden", // Ocultar barra de título nativa
+    frame: false,
+    titleBarStyle: "hidden",
     icon: path.join(
       __dirname,
       process.env.VITE_DEV_SERVER_URL
@@ -48,32 +43,55 @@ function createWindow() {
     backgroundColor: "#f8f9fa",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
-      nodeIntegration: true,
-      contextIsolation: false,
-      enableRemoteModule: true,
+      nodeIntegration: false,
+      contextIsolation: true,
     },
     show: false,
   });
 
-  // Habilitar remote para esta ventana
-  require("@electron/remote/main").enable(mainWindow.webContents);
-
-  // En desarrollo, carga desde Vite. En producción, carga el build
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
   } else {
     mainWindow.loadFile(path.join(__dirname, "../dist-react/index.html"));
   }
 
-  // Mostrar ventana cuando esté lista
   mainWindow.once("ready-to-show", () => {
-    mainWindow.show();
+    mainWindow?.show();
   });
 
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
 }
+
+// ── IPC Handlers ──
+
+ipcMain.on("window:minimize", (event) => {
+  BrowserWindow.fromWebContents(event.sender)?.minimize();
+});
+
+ipcMain.on("window:close", (event) => {
+  BrowserWindow.fromWebContents(event.sender)?.close();
+});
+
+ipcMain.handle("file:save", async (_event, content: string) => {
+  const defaultPath = path.join(os.homedir(), "layout_transferencias.txt");
+
+  const result = await dialog.showSaveDialog({
+    title: "Guardar Layout",
+    defaultPath,
+    filters: [{ name: "Archivos de Texto", extensions: ["txt"] }],
+  });
+
+  if (!result.canceled && result.filePath) {
+    fs.writeFileSync(result.filePath, content, "utf-8");
+    return { success: true, filePath: result.filePath };
+  }
+
+  return { success: false };
+});
+
+// ── App lifecycle ──
 
 app.whenReady().then(() => {
   createWindow();
@@ -91,6 +109,6 @@ app.on("window-all-closed", () => {
   }
 });
 
-app.on("render-process-gone", (event, webContents, details) => {
+app.on("render-process-gone", (_event, _webContents, details) => {
   console.error("Render process gone:", details);
 });

@@ -1,2 +1,2 @@
 export { default as Modal } from "./Modal";
-export { default as Notification } from "./Notification";
+export { openNotification } from "./Notification";

@@ -7,22 +7,13 @@ const { useToken } = theme;
 
 function TitleBar() {
   const { token } = useToken();
+
   const handleMinimize = () => {
-    try {
-      const remote = window.require("@electron/remote");
-      remote.getCurrentWindow().minimize();
-    } catch (e) {
-      console.error("Error minimizing", e);
-    }
+    window.electronAPI.minimizeWindow();
   };
 
   const handleClose = () => {
-    try {
-      const remote = window.require("@electron/remote");
-      remote.getCurrentWindow().close();
-    } catch (e) {
-      console.error("Error closing", e);
-    }
+    window.electronAPI.closeWindow();
   };
 
   return (
@@ -39,10 +30,9 @@ function TitleBar() {
           position: "sticky",
           top: 0,
           zIndex: 1000,
-          WebkitAppRegion: "drag", // Hace que la ventana se pueda mover
+          WebkitAppRegion: "drag",
         } as React.CSSProperties
       }>
-      {/* Logo y Título */}
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         <img
           src={appLogo}
@@ -54,13 +44,12 @@ function TitleBar() {
         </Text>
       </div>
 
-      {/* Botones de Control */}
       <div
         style={
           {
             display: "flex",
             gap: "8px",
-            WebkitAppRegion: "no-drag", // Importante: permite hacer clic en los botones
+            WebkitAppRegion: "no-drag",
           } as React.CSSProperties
         }>
         <Button

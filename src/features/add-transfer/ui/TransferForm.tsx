@@ -12,10 +12,8 @@ import {
   theme,
 } from "antd";
 import { PlusOutlined, ClearOutlined } from "@ant-design/icons";
-import type {
-  DatosTransferencia,
-  NotificationType,
-} from "~/entities/transfer/model/types";
+import type { DatosTransferencia, NotificationType } from "~/entities/transfer";
+import { BANCOS } from "~/shared/lib/bancos";
 
 const { Option } = Select;
 const { Title } = Typography;
@@ -264,17 +262,12 @@ function TransferForm({
               </Col>
               <Col xs={24} md={12}>
                 <Form.Item label="Clave Banco" name="claveBanco">
-                  <Select>
-                    <Option value="044">044 - SCOTIABANK</Option>
-                    <Option value="012">012 - BBVA MEXICO</Option>
-                    <Option value="014">014 - SANTANDER</Option>
-                    <Option value="072">072 - BANORTE</Option>
-                    <Option value="002">002 - BANAMEX</Option>
-                    <Option value="021">021 - HSBC</Option>
-                    <Option value="036">036 - INBURSA</Option>
-                    <Option value="127">127 - AZTECA</Option>
-                    <Option value="132">132 - MULTIVA BANCO</Option>
-                    <Option value="133">133 - ACTINVER</Option>
+                  <Select showSearch optionFilterProp="children">
+                    {Object.entries(BANCOS).map(([code, name]) => (
+                      <Option key={code} value={code}>
+                        {code} - {name}
+                      </Option>
+                    ))}
                   </Select>
                 </Form.Item>
               </Col>

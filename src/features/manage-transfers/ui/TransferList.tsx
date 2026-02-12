@@ -1,20 +1,11 @@
 import { Input, Button, Space, Badge, Typography, theme } from "antd";
 import { DownloadOutlined, DeleteOutlined } from "@ant-design/icons";
-import type {
-  NotificationType,
-  DatosTransferencia,
-} from "~/entities/transfer/model/types";
-import ImportData from "~/features/import-data/ui/ImportData";
+import type { NotificationType, DatosTransferencia } from "~/entities/transfer";
+import { ImportData } from "~/features/import-data";
 
 const { TextArea } = Input;
 const { Title } = Typography;
 const { useToken } = theme;
-
-const fs = window.require ? window.require("fs") : null;
-const path = window.require ? window.require("path") : null;
-const { dialog } = window.require
-  ? window.require("electron").remote || window.require("@electron/remote")
-  : {};
 
 interface TransferListProps {
   transferencias: string[];
@@ -40,18 +31,9 @@ function TransferList({
     const contenido = transferencias.join("\n");
 
     try {
-      const defaultPath = path
-        ? path.join(require("os").homedir(), "layout_transferencias.txt")
-        : "layout_transferencias.txt";
+      const result = await window.electronAPI.saveFile(contenido);
 
-      const result = await dialog.showSaveDialog({
-        title: "Guardar Layout",
-        defaultPath: defaultPath,
-        filters: [{ name: "Archivos de Texto", extensions: ["txt"] }],
-      });
-
-      if (!result.canceled && result.filePath) {
-        fs.writeFileSync(result.filePath, contenido, "utf-8");
+      if (result.success) {
         showNotification(
           `Archivo descargado: ${transferencias.length} transferencias`,
           "success",
