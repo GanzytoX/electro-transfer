@@ -80,7 +80,7 @@ interface DetectionResult {
 function detectTypeAndValidate(headers: string[]): DetectionResult {
   const unrecognizedColumns: string[] = [];
   for (const header of headers) {
-    if (!RECOGNIZED_COLUMNS.has(header)) {
+    if (!RECOGNIZED_COLUMNS.has(header) && !header.startsWith("__EMPTY")) {
       unrecognizedColumns.push(header);
     }
   }
