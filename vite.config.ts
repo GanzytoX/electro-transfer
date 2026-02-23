@@ -1,7 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import electron from "vite-plugin-electron";
-import renderer from "vite-plugin-electron-renderer";
 import { fileURLToPath } from "url";
 import path from "path";
 
@@ -12,7 +11,7 @@ export default defineConfig({
     react(),
     electron([
       {
-        entry: "electron/main.js",
+        entry: "electron/main.ts",
         onstart(options) {
           options.startup();
         },
@@ -23,7 +22,7 @@ export default defineConfig({
         },
       },
       {
-        entry: "electron/preload.js",
+        entry: "electron/preload.ts",
         onstart(options) {
           options.reload();
         },
@@ -34,7 +33,6 @@ export default defineConfig({
         },
       },
     ]),
-    renderer(),
   ],
   resolve: {
     alias: {

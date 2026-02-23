@@ -1,5 +1,5 @@
 import { notification } from "antd";
-import type { NotificationType } from "~/entities/transfer/model/types";
+import type { NotificationType } from "~/entities/transfer";
 
 export const openNotification = (
   message: string,

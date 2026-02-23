@@ -1,11 +1,11 @@
 export interface DatosTransferencia {
+  tipoTransferencia: "mismo-banco" | "spei";
   cuentaOrigen: string;
   cuentaDestino: string;
   monto: number | string;
   concepto: string;
   divisa?: string;
   clave?: string;
-  tipoTransferencia?: "mismo-banco" | "spei";
   titular?: string;
   tipoCuenta?: string;
   claveBanco?: string;
@@ -14,11 +14,6 @@ export interface DatosTransferencia {
 }
 
 export type NotificationType = "success" | "error" | "warning" | "info";
-
-export interface NotificationState {
-  message: string;
-  type: NotificationType;
-}
 
 export interface ModalState {
   title: string;

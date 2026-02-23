@@ -1,4 +1,5 @@
 import { Layout, Typography, theme } from "antd";
+import packageJson from "../../../../package.json";
 
 const { Footer: AntFooter } = Layout;
 const { Text } = Typography;
@@ -17,10 +18,12 @@ function Footer() {
       <Text type="secondary" style={{ fontSize: "13px" }}>
         Hecho por{" "}
         <Text strong style={{ color: token.colorPrimary }}>
-          GanzytoX
+          {packageJson.author.name}
         </Text>
-        {" • "}2026{" • "}
-        <Text strong>v2.0</Text>
+        {" • "}
+        {new Date().getFullYear()}
+        {" • "}
+        <Text strong>v{packageJson.version}</Text>
       </Text>
     </AntFooter>
   );

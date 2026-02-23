@@ -1,17 +1,16 @@
 import { useState, useEffect } from "react";
 import { Layout, ConfigProvider, theme } from "antd";
-import TitleBar from "~/widgets/titlebar/ui/TitleBar";
-import Footer from "~/widgets/footer/ui/Footer";
-import TransferForm from "~/features/add-transfer/ui/TransferForm";
-import TransferList from "~/features/manage-transfers/ui/TransferList";
-import { openNotification } from "~/shared/ui/Notification";
-import Modal from "~/shared/ui/Modal";
-import { TransferenciaGenerator } from "~/entities/transfer/lib/TransferenciaGenerator";
-import type {
-  DatosTransferencia,
-  ModalState,
-  NotificationType,
-} from "~/entities/transfer/model/types";
+import { TitleBar } from "~/widgets/titlebar";
+import { Footer } from "~/widgets/footer";
+import { TransferForm } from "~/features/add-transfer";
+import { TransferList } from "~/features/manage-transfers";
+import { openNotification, Modal } from "~/shared/ui";
+import {
+  TransferenciaGenerator,
+  type DatosTransferencia,
+  type ModalState,
+  type NotificationType,
+} from "~/entities/transfer";
 
 const { Content } = Layout;
 function App() {
@@ -53,14 +52,8 @@ function App() {
     }
 
     if (transferencias.length === 0) {
-      if (datos.tipoTransferencia) {
-        setTipoLote(datos.tipoTransferencia);
-      }
-    } else if (
-      tipoLote &&
-      datos.tipoTransferencia &&
-      tipoLote !== datos.tipoTransferencia
-    ) {
+      setTipoLote(datos.tipoTransferencia);
+    } else if (tipoLote && tipoLote !== datos.tipoTransferencia) {
       showNotification(
         "No se pueden mezclar tipos de transferencia en el mismo archivo",
         "error",
@@ -96,11 +89,7 @@ function App() {
   const importarDatos = (datos: DatosTransferencia[]) => {
     if (datos.length > 0) {
       const primerDato = datos[0];
-      if (
-        tipoLote &&
-        primerDato.tipoTransferencia &&
-        primerDato.tipoTransferencia !== tipoLote
-      ) {
+      if (tipoLote && primerDato.tipoTransferencia !== tipoLote) {
         showNotification(
           `El archivo contiene transferencias tipo ${primerDato.tipoTransferencia.toUpperCase()} pero el lote actual es ${tipoLote.toUpperCase()}.`,
           "error",
@@ -112,13 +101,13 @@ function App() {
     let transferenciasGeneradas: string[] = [];
     let errores = 0;
 
-    datos.forEach((datos) => {
+    datos.forEach((item) => {
       try {
         let linea: string;
-        if (datos.tipoTransferencia === "spei") {
-          linea = TransferenciaGenerator.generarSPEI(datos);
+        if (item.tipoTransferencia === "spei") {
+          linea = TransferenciaGenerator.generarSPEI(item);
         } else {
-          linea = TransferenciaGenerator.generarMismoBanco(datos);
+          linea = TransferenciaGenerator.generarMismoBanco(item);
         }
         transferenciasGeneradas.push(linea);
       } catch (error) {
@@ -137,11 +126,7 @@ function App() {
     }
 
     if (transferenciasGeneradas.length > 0) {
-      if (
-        transferencias.length === 0 &&
-        datos.length > 0 &&
-        datos[0].tipoTransferencia
-      ) {
+      if (transferencias.length === 0 && datos.length > 0) {
         setTipoLote(datos[0].tipoTransferencia);
       }
       setTransferencias([...transferencias, ...transferenciasGeneradas]);
@@ -172,7 +157,17 @@ function App() {
   );
 }
 
-// Extracted for cleaner theme usage
+interface AppContentProps {
+  transferencias: string[];
+  agregarTransferencia: (datos: DatosTransferencia) => boolean;
+  limpiarTransferencias: () => void;
+  importarDatos: (datos: DatosTransferencia[]) => void;
+  showNotification: (message: string, type: NotificationType) => void;
+  modal: ModalState | null;
+  closeModal: () => void;
+  tipoLote: "mismo-banco" | "spei" | null;
+}
+
 function AppContent({
   transferencias,
   agregarTransferencia,
@@ -182,7 +177,7 @@ function AppContent({
   modal,
   closeModal,
   tipoLote,
-}: any) {
+}: AppContentProps) {
   const { token } = theme.useToken();
 
   return (
