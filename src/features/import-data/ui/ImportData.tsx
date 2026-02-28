@@ -1,6 +1,6 @@
-import { Button, Upload } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-import type { UploadProps } from "antd";
+import { useState, useRef } from "react";
+import { Button, FileButton, Modal, Loader, Stack, Text } from "@mantine/core";
+import { IconUpload } from "@tabler/icons-react";
 import * as XLSX from "xlsx";
 import type { NotificationType, DatosTransferencia } from "~/entities/transfer";
 import { obtenerClaveBanco } from "~/shared/lib/bancos";
@@ -120,6 +120,9 @@ function detectTypeAndValidate(headers: string[]): DetectionResult {
 }
 
 function ImportData({ onImportData, showNotification }: ImportDataProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const resetRef = useRef<() => void>(null);
+
   const mapearDatos = (
     datos: ImportedRow[],
     tipo: "mismo-banco" | "spei",
@@ -183,101 +186,131 @@ function ImportData({ onImportData, showNotification }: ImportDataProps) {
       );
   };
 
-  const procesarArchivo = (file: File) => {
+  const procesarArchivo = (file: File | null) => {
+    if (!file) return;
+    setIsLoading(true);
+
     const reader = new FileReader();
 
     reader.onload = (e) => {
-      try {
-        const data = e.target?.result;
-        let workbook: XLSX.WorkBook;
+      setTimeout(() => {
+        try {
+          const data = e.target?.result;
+          let workbook: XLSX.WorkBook;
 
-        if (file.name.toLowerCase().endsWith(".csv")) {
-          workbook = XLSX.read(data, { type: "binary", codepage: 65001 });
-        } else {
-          workbook = XLSX.read(data, { type: "binary" });
-        }
+          if (file.name.toLowerCase().endsWith(".csv")) {
+            workbook = XLSX.read(data, { type: "binary", codepage: 65001 });
+          } else {
+            workbook = XLSX.read(data, { type: "binary" });
+          }
 
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData: ImportedRow[] = XLSX.utils.sheet_to_json(worksheet);
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData: ImportedRow[] = XLSX.utils.sheet_to_json(worksheet);
 
-        if (jsonData.length === 0) {
-          showNotification(
-            "El archivo está vacío o no tiene datos válidos",
-            "error",
-          );
-          return;
-        }
+          if (jsonData.length === 0) {
+            showNotification(
+              "El archivo está vacío o no tiene datos válidos",
+              "error",
+            );
+            return;
+          }
 
-        const headers = Object.keys(jsonData[0]);
+          const headers = Object.keys(jsonData[0]);
 
-        const detection = detectTypeAndValidate(headers);
+          const detection = detectTypeAndValidate(headers);
 
-        if (!detection.isValid) {
+          if (!detection.isValid) {
+            const tipoLabel =
+              detection.type === "spei" ? "SPEI" : "Mismo Banco";
+            const errores: string[] = [];
+
+            if (detection.unrecognizedColumns.length > 0) {
+              errores.push(
+                `Columnas no reconocidas: ${detection.unrecognizedColumns.join(", ")}`,
+              );
+            }
+            if (detection.missingColumns.length > 0) {
+              errores.push(
+                `Columnas obligatorias faltantes: ${detection.missingColumns.join(", ")}`,
+              );
+            }
+
+            showNotification(
+              `No se puede importar (${tipoLabel}). ${errores.join(". ")}`,
+              "error",
+            );
+            return;
+          }
+
+          const datosImportados = mapearDatos(jsonData, detection.type);
+
+          if (datosImportados.length === 0) {
+            showNotification(
+              "No se encontraron datos válidos para importar",
+              "warning",
+            );
+            return;
+          }
+
           const tipoLabel = detection.type === "spei" ? "SPEI" : "Mismo Banco";
-          const errores: string[] = [];
-
-          if (detection.unrecognizedColumns.length > 0) {
-            errores.push(
-              `Columnas no reconocidas: ${detection.unrecognizedColumns.join(", ")}`,
-            );
-          }
-          if (detection.missingColumns.length > 0) {
-            errores.push(
-              `Columnas obligatorias faltantes: ${detection.missingColumns.join(", ")}`,
-            );
-          }
-
           showNotification(
-            `No se puede importar (${tipoLabel}). ${errores.join(". ")}`,
+            `Tipo detectado: ${tipoLabel} — ${datosImportados.length} registros encontrados`,
+            "info",
+          );
+
+          onImportData(datosImportados);
+        } catch (error) {
+          console.error("Error al procesar archivo:", error);
+          showNotification(
+            "Error al procesar el archivo. Verifique el formato.",
             "error",
           );
-          return;
+        } finally {
+          setIsLoading(false);
+          resetRef.current?.();
         }
+      }, 50); // Pequeño delay para permitir que el modal se renderice primero
+    };
 
-        const datosImportados = mapearDatos(jsonData, detection.type);
-
-        if (datosImportados.length === 0) {
-          showNotification(
-            "No se encontraron datos válidos para importar",
-            "warning",
-          );
-          return;
-        }
-
-        const tipoLabel = detection.type === "spei" ? "SPEI" : "Mismo Banco";
-        showNotification(
-          `Tipo detectado: ${tipoLabel} — ${datosImportados.length} registros encontrados`,
-          "info",
-        );
-
-        onImportData(datosImportados);
-      } catch (error) {
-        console.error("Error al procesar archivo:", error);
-        showNotification(
-          "Error al procesar el archivo. Verifique el formato.",
-          "error",
-        );
-      }
+    reader.onerror = () => {
+      setIsLoading(false);
+      resetRef.current?.();
+      showNotification("Error de lectura del archivo.", "error");
     };
 
     reader.readAsBinaryString(file);
-    return false;
-  };
-
-  const uploadProps: UploadProps = {
-    name: "file",
-    accept: ".xlsx,.xls,.csv",
-    beforeUpload: procesarArchivo,
-    showUploadList: false,
   };
 
   return (
-    <Upload {...uploadProps}>
-      <Button icon={<UploadOutlined />} size="large">
-        Importar Excel/CSV
-      </Button>
-    </Upload>
+    <>
+      <Modal
+        opened={isLoading}
+        onClose={() => {}}
+        withCloseButton={false}
+        closeOnClickOutside={false}
+        closeOnEscape={false}
+        centered
+        size="auto">
+        <Stack align="center" justify="center" p="xl" gap="md">
+          <Loader size="xl" type="bars" />
+          <Text fw={500} ta="center" mt="sm">
+            Procesando archivo, por favor espera...
+          </Text>
+        </Stack>
+      </Modal>
+
+      <FileButton
+        onChange={procesarArchivo}
+        accept=".xlsx,.xls,.csv"
+        resetRef={resetRef}>
+        {(props) => (
+          <Button {...props} leftSection={<IconUpload size={16} />} size="md">
+            Importar Excel/CSV
+          </Button>
+        )}
+      </FileButton>
+    </>
   );
 }
 

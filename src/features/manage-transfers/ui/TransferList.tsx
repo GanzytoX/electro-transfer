@@ -1,11 +1,15 @@
-import { Input, Button, Space, Badge, Typography, theme } from "antd";
-import { DownloadOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  Textarea,
+  Button,
+  Group,
+  Badge,
+  Text,
+  Title,
+  Box,
+} from "@mantine/core";
+import { IconDownload, IconTrash } from "@tabler/icons-react";
 import type { NotificationType, DatosTransferencia } from "~/entities/transfer";
 import { ImportData } from "~/features/import-data";
-
-const { TextArea } = Input;
-const { Title } = Typography;
-const { useToken } = theme;
 
 interface TransferListProps {
   transferencias: string[];
@@ -20,8 +24,6 @@ function TransferList({
   showNotification,
   onImportData,
 }: TransferListProps) {
-  const { token } = useToken();
-
   const descargarArchivo = async () => {
     if (transferencias.length === 0) {
       showNotification("No hay transferencias para descargar", "warning");
@@ -46,65 +48,60 @@ function TransferList({
   };
 
   return (
-    <div>
-      <div
-        style={{
-          marginBottom: "32px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}>
-        <Title level={4} style={{ margin: 0, color: token.colorText }}>
+    <Box>
+      <Group justify="space-between" align="center" mb="xl">
+        <Title order={4} m={0}>
           Transferencias Agregadas
         </Title>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <Badge
-            count={transferencias.length}
-            showZero
-            style={{ backgroundColor: token.colorPrimary }}
-            overflowCount={9999}
-          />
-          <span style={{ color: token.colorTextDescription, fontSize: "14px" }}>
+        <Group align="center" gap="md">
+          <Badge size="lg" variant="filled">
+            {transferencias.length}
+          </Badge>
+          <Text c="dimmed" size="sm">
             Máximo: 5000
-          </span>
-        </div>
-      </div>
-      <TextArea
+          </Text>
+        </Group>
+      </Group>
+      <Textarea
         value={transferencias.join("\n")}
-        rows={10}
+        minRows={10}
+        maxRows={15}
+        autosize
         readOnly
         placeholder="Las transferencias aparecerán aquí..."
-        style={{
-          fontFamily: "monospace",
-          fontSize: "12px",
-          marginBottom: "16px",
+        styles={{
+          input: {
+            fontFamily: "monospace",
+            fontSize: "12px",
+          },
         }}
+        mb="md"
       />
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Space>
+      <Group justify="space-between">
+        <Group>
           <Button
-            danger
-            icon={<DeleteOutlined />}
+            color="red"
+            variant="outline"
+            leftSection={<IconTrash size={16} />}
             onClick={onLimpiar}
             disabled={transferencias.length === 0}
-            size="large">
+            size="md">
             Limpiar Transferencias
           </Button>
           <Button
-            type="primary"
-            icon={<DownloadOutlined />}
+            leftSection={<IconDownload size={16} />}
             onClick={descargarArchivo}
             disabled={transferencias.length === 0}
-            size="large">
+            size="md">
             Descargar TXT
           </Button>
-        </Space>
+        </Group>
         <ImportData
           onImportData={onImportData}
           showNotification={showNotification}
         />
-      </div>
-    </div>
+      </Group>
+    </Box>
   );
 }
 
