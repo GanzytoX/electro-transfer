@@ -1,23 +1,21 @@
-import { notification } from "antd";
+import { notifications } from "@mantine/notifications";
 import type { NotificationType } from "~/entities/transfer";
 
 export const openNotification = (
   message: string,
   type: NotificationType = "info",
 ) => {
-  const notificationMap = {
-    success: notification.success,
-    error: notification.error,
-    warning: notification.warning,
-    info: notification.info,
+  const colorMap = {
+    success: "green",
+    error: "red",
+    warning: "yellow",
+    info: "blue",
   };
 
-  const showNotification = notificationMap[type] || notification.info;
-
-  showNotification({
+  notifications.show({
     message: message,
-    placement: "topRight",
-    duration: 3,
+    color: colorMap[type] || "blue",
+    autoClose: 3000,
   });
 };
 

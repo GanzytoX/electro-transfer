@@ -21,7 +21,7 @@ ElectroTransfer es una aplicación de escritorio diseñada para facilitar la cre
 
 Sigue estos pasos sencillos para instalar la aplicación en tu computadora:
 
-1.  **Localizar el Instalador**: Busca el archivo llamado `ElectroTransfer Setup 2.0.0.exe` (ubicado generalmente en la carpeta `dist` si te enviaron el proyecto, o donde lo hayas descargado).
+1.  **Localizar el Instalador**: Busca el archivo llamado `ElectroTransfer Setup 3.0.0.exe` (ubicado generalmente en la carpeta `dist` si te enviaron el proyecto, o donde lo hayas descargado).
 2.  **Instalar**: Haz doble clic sobre el archivo `.exe`.
 3.  **Listo**: La instalación es automática. Verás un icono de "ElectroTransfer" en tu escritorio.
 4.  **Ejecutar**: Abre la aplicación y comienza a trabajar.
@@ -65,4 +65,4 @@ npm install
 ## 👨‍💻 Créditos
 
 Desarrollado por **GanzytoX** - 2026.
-Construido con tecnología moderna para garantizar rapidez y estabilidad: Electron, React y TypeScript.
+Construido con tecnología moderna para garantizar rapidez y estabilidad: Electron, React, TypeScript, Mantine y Tabler Icons.

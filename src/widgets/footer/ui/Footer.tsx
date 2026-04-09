@@ -1,31 +1,28 @@
-import { Layout, Typography, theme } from "antd";
+import { Text, Box } from "@mantine/core";
 import packageJson from "../../../../package.json";
 
-const { Footer: AntFooter } = Layout;
-const { Text } = Typography;
-const { useToken } = theme;
-
 function Footer() {
-  const { token } = useToken();
   return (
-    <AntFooter
+    <Box
       style={{
         textAlign: "center",
-        background: token.colorBgLayout,
-        borderTop: `1px solid ${token.colorSplit}`,
+        backgroundColor: "var(--mantine-color-body)",
+        borderTop: "1px solid var(--mantine-color-default-border)",
         padding: "16px 24px",
       }}>
-      <Text type="secondary" style={{ fontSize: "13px" }}>
+      <Text c="dimmed" size="sm">
         Hecho por{" "}
-        <Text strong style={{ color: token.colorPrimary }}>
+        <Text span fw={700} c="myColor.6">
           {packageJson.author.name}
         </Text>
         {" • "}
         {new Date().getFullYear()}
         {" • "}
-        <Text strong>v{packageJson.version}</Text>
+        <Text span fw={700}>
+          v{packageJson.version}
+        </Text>
       </Text>
-    </AntFooter>
+    </Box>
   );
 }
 
