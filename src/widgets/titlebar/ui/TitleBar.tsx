@@ -1,13 +1,8 @@
-import { Button, Typography, theme } from "antd";
-import { MinusOutlined, CloseOutlined } from "@ant-design/icons";
+import { ActionIcon, Text, Group, Box } from "@mantine/core";
+import { IconMinus, IconX } from "@tabler/icons-react";
 import appLogo from "~/shared/assets/app_logo.png";
 
-const { Text } = Typography;
-const { useToken } = theme;
-
 function TitleBar() {
-  const { token } = useToken();
-
   const handleMinimize = () => {
     window.electronAPI.minimizeWindow();
   };
@@ -17,71 +12,52 @@ function TitleBar() {
   };
 
   return (
-    <div
+    <Box
       style={
         {
           height: "32px",
-          background: token.colorBgContainer,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           padding: "0 16px",
-          borderBottom: `1px solid ${token.colorSplit}`,
+          borderBottom: "1px solid var(--mantine-color-default-border)",
           position: "sticky",
           top: 0,
           zIndex: 1000,
           WebkitAppRegion: "drag",
+          backgroundColor: "var(--mantine-color-body)",
         } as React.CSSProperties
       }>
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <Group gap="xs" style={{ alignItems: "center" }}>
         <img
           src={appLogo}
           alt="Icon"
           style={{ width: "16px", height: "16px", objectFit: "contain" }}
         />
-        <Text strong style={{ fontSize: "12px", color: token.colorText }}>
+        <Text fw={700} size="xs">
           ElectroTransfer
         </Text>
-      </div>
+      </Group>
 
-      <div
-        style={
-          {
-            display: "flex",
-            gap: "8px",
-            WebkitAppRegion: "no-drag",
-          } as React.CSSProperties
-        }>
-        <Button
-          type="text"
-          size="small"
-          icon={<MinusOutlined style={{ fontSize: "10px" }} />}
-          onClick={handleMinimize}
-          style={{
-            width: "24px",
-            height: "24px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: token.colorText,
-          }}
-        />
-        <Button
-          type="text"
-          size="small"
-          icon={<CloseOutlined style={{ fontSize: "10px" }} />}
-          onClick={handleClose}
-          danger
-          style={{
-            width: "24px",
-            height: "24px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        />
-      </div>
-    </div>
+      <Group
+        gap="xs"
+        style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
+        <ActionIcon
+          variant="subtle"
+          color="gray"
+          size="sm"
+          onClick={handleMinimize}>
+          <IconMinus size={14} />
+        </ActionIcon>
+        <ActionIcon
+          variant="subtle"
+          color="red"
+          size="sm"
+          onClick={handleClose}>
+          <IconX size={14} />
+        </ActionIcon>
+      </Group>
+    </Box>
   );
 }
 

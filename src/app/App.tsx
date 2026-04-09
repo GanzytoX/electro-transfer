@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { Layout, ConfigProvider, theme } from "antd";
+import { useState } from "react";
+import { MantineProvider, createTheme, AppShell, Box } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 import { TitleBar } from "~/widgets/titlebar";
 import { Footer } from "~/widgets/footer";
 import { TransferForm } from "~/features/add-transfer";
@@ -12,20 +13,29 @@ import {
   type NotificationType,
 } from "~/entities/transfer";
 
-const { Content } = Layout;
+import "@mantine/notifications/styles.css";
+
+const myColor = [
+  "#e5f3ff",
+  "#cde2ff",
+  "#9ac2ff",
+  "#64a0ff",
+  "#3884fe",
+  "#1d72fe",
+  "#0063ff",
+  "#0058e4",
+  "#004ecd",
+  "#0043b5",
+] as const;
+
+const theme = createTheme({
+  colors: {
+    myColor,
+  },
+  primaryColor: "myColor",
+});
+
 function App() {
-  const [isDarkMode, setIsDarkMode] = useState(
-    window.matchMedia("(prefers-color-scheme: dark)").matches,
-  );
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = (e: MediaQueryListEvent) => setIsDarkMode(e.matches);
-
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, []);
-
   const [transferencias, setTransferencias] = useState<string[]>([]);
   const [modal, setModal] = useState<ModalState | null>(null);
   const [tipoLote, setTipoLote] = useState<"mismo-banco" | "spei" | null>(null);
@@ -139,10 +149,8 @@ function App() {
   };
 
   return (
-    <ConfigProvider
-      theme={{
-        algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
-      }}>
+    <MantineProvider defaultColorScheme="auto" theme={theme}>
+      <Notifications position="top-right" zIndex={2000} />
       <AppContent
         transferencias={transferencias}
         agregarTransferencia={agregarTransferencia}
@@ -153,7 +161,7 @@ function App() {
         closeModal={closeModal}
         tipoLote={tipoLote}
       />
-    </ConfigProvider>
+    </MantineProvider>
   );
 }
 
@@ -178,29 +186,31 @@ function AppContent({
   closeModal,
   tipoLote,
 }: AppContentProps) {
-  const { token } = theme.useToken();
-
   return (
-    <Layout style={{ minHeight: "100vh", background: token.colorBgContainer }}>
-      <TitleBar />
-      <Content style={{ padding: "16px", background: token.colorBgLayout }}>
-        <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-          <div style={{ marginBottom: "32px" }}>
+    <AppShell header={{ height: 32 }} footer={{ height: 50 }}>
+      <AppShell.Header>
+        <TitleBar />
+      </AppShell.Header>
+      <AppShell.Main bg="var(--mantine-color-body)">
+        <Box p="md" maw="100%" mx="auto">
+          <Box mb="xl">
             <TransferForm
               onAgregar={agregarTransferencia}
               showNotification={showNotification}
               currentType={tipoLote}
             />
-          </div>
+          </Box>
           <TransferList
             transferencias={transferencias}
             onLimpiar={limpiarTransferencias}
             showNotification={showNotification}
             onImportData={importarDatos}
           />
-        </div>
-      </Content>
-      <Footer />
+        </Box>
+      </AppShell.Main>
+      <AppShell.Footer>
+        <Footer />
+      </AppShell.Footer>
       {modal && (
         <Modal
           title={modal.title}
@@ -209,7 +219,7 @@ function AppContent({
           onCancel={closeModal}
         />
       )}
-    </Layout>
+    </AppShell>
   );
 }
 

@@ -1,5 +1,5 @@
-import { Modal as AntModal } from "antd";
-import { ExclamationCircleOutlined } from "@ant-design/icons";
+import { Modal as MantineModal, Text, Button, Group } from "@mantine/core";
+import { IconAlertCircle } from "@tabler/icons-react";
 
 interface ModalProps {
   title: string;
@@ -10,23 +10,28 @@ interface ModalProps {
 
 function Modal({ title, message, onConfirm, onCancel }: ModalProps) {
   return (
-    <AntModal
+    <MantineModal
+      opened={true}
+      onClose={onCancel}
       title={
-        <span>
-          <ExclamationCircleOutlined
-            style={{ color: "#faad14", marginRight: 8 }}
-          />
-          {title}
-        </span>
+        <Group gap="xs">
+          <IconAlertCircle size={20} color="var(--mantine-color-yellow-6)" />
+          <Text fw={500}>{title}</Text>
+        </Group>
       }
-      open={true}
-      onOk={onConfirm}
-      onCancel={onCancel}
-      okText="Confirmar"
-      cancelText="Cancelar"
-      okButtonProps={{ danger: true }}>
-      <p>{message}</p>
-    </AntModal>
+      centered>
+      <Text size="sm" mb="lg">
+        {message}
+      </Text>
+      <Group justify="flex-end" gap="sm">
+        <Button variant="default" onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button color="red" onClick={onConfirm}>
+          Confirmar
+        </Button>
+      </Group>
+    </MantineModal>
   );
 }
 
